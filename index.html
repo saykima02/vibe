@@ -95,7 +95,11 @@ async function load(){
       rows = rowsToData(parseCSV(await res.text())); src = "구글 시트 실시간";
     }catch(e){ console.warn("시트 로드 실패, 예비 데이터 사용", e); src = "예비 데이터 (시트 연결 실패)"; }
   }
-  if(!rows) rows = window.HUB_FALLBACK || [];
+  if(!rows){
+    // 이미 화면에 데이터가 있으면 유지(일시적 실패로 카드가 사라지지 않도록). 최초 로드일 때만 예비 데이터 사용
+    if(lastSig){ $("status").textContent = `${src} · 이전 데이터 유지 중 (${new Date().toLocaleTimeString("ko-KR")})`; return; }
+    rows = window.HUB_FALLBACK || [];
+  }
   const sig = JSON.stringify(rows);
   $("status").textContent = `${src} · ${new Date().toLocaleTimeString("ko-KR")} 갱신`;
   if(sig !== lastSig){ lastSig = sig; data = rows; chips(); render(); }
@@ -151,7 +155,8 @@ function setupPreviews(){ document.querySelectorAll(".preview").forEach(b=>{io.o
 
 $("q").addEventListener("input", render);
 load();
-if(CFG.REFRESH_SEC>0) setInterval(load, CFG.REFRESH_SEC*1000);
+if(CFG.REFRESH_SEC>0) setInterval(()=>{ if(!document.hidden) load(); }, CFG.REFRESH_SEC*1000);
+document.addEventListener("visibilitychange", ()=>{ if(!document.hidden) load(); });
 </script>
 </body>
 </html>
