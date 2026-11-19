@@ -309,14 +309,12 @@ function render(){
 
   const rows = bySearch.filter(d => company==="전체" || d.company===company);
   const tree = {};
-  rows.forEach(d => ((tree[d.company] ??= {})[d.dept||"부서 미지정"] ??= []).push(d));
+  rows.forEach(d => (tree[d.company] ??= []).push(d));
   const pre = animateNext && !REDUCE ? " pre" : "";
   let k = 0;
-  $("list").innerHTML = Object.entries(tree).map(([co,depts]) => `
+  $("list").innerHTML = Object.entries(tree).map(([co,items]) => `
     <section class="company"><h2><span class="dot" style="--c:${tone(co)}"></span>${hl(co,q)}</h2>
-    ${Object.entries(depts).map(([dp,items]) => `
-      <div class="dept"><h3>${hl(dp,q)}<small>${items.length}</small></h3>
-      <div class="grid">${items.map(d => `
+    <div class="dept"><div class="grid">${items.map(d => `
         <a class="card${pre}" style="--i:${(k++)%6}" href="${esc(d.url)}" target="_blank" rel="noopener noreferrer" aria-label="${esc(d.name)} 사이트 열기">
           <div class="preview" data-url="${esc(d.url)}">
             <div class="zoom"></div>
@@ -324,7 +322,7 @@ function render(){
             <span class="host">${esc(hostOf(d.url))}</span>
           </div>
           <div class="meta">
-            <div class="who"><span class="name">${hl(d.name,q)}</span><span class="sub">${esc(d.dept)}</span></div>
+            <div class="who"><span class="name">${hl(d.name,q)}</span><span class="sub">${hl(d.dept,q)}</span></div>
             <span class="go">${ARROW}</span>
           </div>
         </a>`).join("")}</div></div>`).join("")}
